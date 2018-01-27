@@ -1,11 +1,34 @@
-const http = require('http')
-const module1 = require('./module1')
+const url = require('url')
+const fs = require('fs')
 
-const onRequest = (req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' })
-  res.write(module1.str)
-  module1.myFx()
-  res.end()
+const renderHtml = (path, res) => {
+  fs.readFile(path, null, (error, data) => {
+    if (error) {
+      res.writeHead(404)
+      res.write('File not found!')
+    } else {
+      res.write(data)
+    }
+    res.end()
+  })
 }
 
-http.createServer(onRequest).listen(3000)
+module.exports = {
+  handleReq: (req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/html' })
+    const path = url.parse(req.url).pathname
+    switch (path) {
+      case '/':
+        renderHtml('./index.html', res)
+        break
+      case '/login':
+        renderHtml('./login.html', res)
+        break
+      default:
+        res.writeHead(404)
+        res.write('Route not found.')
+        res.end()
+        break
+    }
+  }
+}
